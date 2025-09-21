@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('./../db');
+const { ObjectId } = require('mongodb');
 
 router.get('/employees', (req, res) => {
   req.db
@@ -24,13 +25,33 @@ router.get('/employees/random', (req, res) => {
 });
 
 router.get('/employees/:id', (req, res) => {
-  res.json(db.employees.find((item) => item.id == req.params.id));
+  req.db
+    .collection('employees')
+    .findOne({ _id: ObjectId(req.params.id) })
+    .then((data) => {
+      console.log(data);
+    })
+    .catch((err) => {
+      res.status(500).json({ message: err });
+    });
 });
 
 router.post('/employees', (req, res) => {
   const { firstName, lastName } = req.body;
-  db.employees.push({ id: 3, firstName, lastName });
-  res.json({ message: 'OK' });
+
+  req.db
+    .collection('employees')
+    .insertOne(
+      { _id: ObjectId(req.params.id) },
+      { firstName: firstName },
+      { lastName: lastName }
+    )
+    .then(() => {
+      res.json({ message: 'OK' });
+    })
+    .catch((err) => {
+      res.status(500).json({ message: err });
+    });
 });
 
 router.put('/employees/:id', (req, res) => {
