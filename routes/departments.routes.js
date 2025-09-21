@@ -47,11 +47,15 @@ router.post('/departments', (req, res) => {
 });
 
 router.put('/departments/:id', (req, res) => {
-  const { name } = req.body;
-  db = db.departments.map((item) =>
-    item.id == req.params.id ? { ...item, name } : item
-  );
-  res.json({ message: 'OK' });
+  req.db
+    .collection('/departments/:id')
+    .updateOne({ _id: ObjectId(req.params.id) }, { $set: { name: name } })
+    .then(() => {
+      res.json({ message: 'OK' });
+    })
+    .catch((err) => {
+      res.status(500).json({ message: err });
+    });
 });
 
 router.delete('/departments/:id', (req, res) => {
