@@ -17,7 +17,7 @@ router.get('/departments', (req, res) => {
 
 router.get('/departments/random', (req, res) => {
   req.db
-    .collection('deparments/random')
+    .collection('departments')
     .aggregate([{ $sample: { size: 1 } }])
     .toArray()
     .then((data) => {
