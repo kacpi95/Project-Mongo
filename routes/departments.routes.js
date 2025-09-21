@@ -55,8 +55,9 @@ router.post('/departments', (req, res) => {
 });
 
 router.put('/departments/:id', (req, res) => {
+  const { name } = req.body;
   req.db
-    .collection('/departments/:id')
+    .collection('departments')
     .updateOne({ _id: ObjectId(req.params.id) }, { $set: { name: name } })
     .then(() => {
       res.json({ message: 'OK' });
@@ -68,7 +69,7 @@ router.put('/departments/:id', (req, res) => {
 
 router.delete('/departments/:id', (req, res) => {
   req.db
-    .collection('/departments/:id')
+    .collection('departments')
     .deleteOne({ _id: ObjectId(req.params.id) })
     .then(() => {
       req.json({ message: 'OK' }).catch((err) => {
