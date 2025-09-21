@@ -14,22 +14,14 @@ mongoClient.connect(
       console.log(err);
     } else {
       console.log('Successfully connected to the database');
+
       const db = client.db('companyDB');
       const app = express();
 
-      db.collection('employees')
-        .find({ department: 'IT' })
-        .toArray()
-        .then((data) => {
-          console.log(data);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-
-      db.collection('departments')
-        .insertOne({ name: 'Management' })
-        .catch((err) => console.log(err));
+      app.use((req, res, next) => {
+        req.db = db;
+        next();
+      });
 
       app.use(cors());
       app.use(express.json());
