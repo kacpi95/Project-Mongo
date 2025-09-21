@@ -59,8 +59,14 @@ router.put('/departments/:id', (req, res) => {
 });
 
 router.delete('/departments/:id', (req, res) => {
-  db = db.departments.filter((item) => item.id != req.params.id);
-  res.json({ message: 'OK' });
+  req.db
+    .collection('/departments/:id')
+    .deleteOne({ _id: ObjectId(req.params.id) })
+    .then(() => {
+      req.json({ message: 'OK' }).catch((err) => {
+        res.status(500).json({ message: err });
+      });
+    });
 });
 
 module.exports = router;
