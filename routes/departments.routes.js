@@ -35,8 +35,15 @@ router.get('/departments/:id', (req, res) => {
 
 router.post('/departments', (req, res) => {
   const { name } = req.body;
-  db.departments.push({ id: 3, name });
-  res.json({ message: 'OK' });
+  req.db
+    .collection('departments')
+    .insertOne({ name: name })
+    .then(() => {
+      res.json({ message: 'OK' });
+    })
+    .catch((err) => {
+      res.status(500).json({ message: err });
+    });
 });
 
 router.put('/departments/:id', (req, res) => {
