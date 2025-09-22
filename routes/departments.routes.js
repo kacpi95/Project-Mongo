@@ -43,28 +43,34 @@ router.post('/departments', async (req, res) => {
   }
 });
 
-router.put('/departments/:id', (req, res) => {
+router.put('/departments/:id', async (req, res) => {
   const { name } = req.body;
-  req.db
-    .collection('departments')
-    .updateOne({ _id: ObjectId(req.params.id) }, { $set: { name: name } })
-    .then(() => {
+
+  try {
+    const dep = await Department.findByIdAndUpdate(
+      req.params.id,
+      { name },
+      { new: true }
+    );
+    if (dep) {
       res.json({ message: 'OK' });
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err });
-    });
+    } else res.status(404).json({ message: 'Not found' });
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
-router.delete('/departments/:id', (req, res) => {
-  req.db
-    .collection('departments')
-    .deleteOne({ _id: ObjectId(req.params.id) })
-    .then(() => {
-      req.json({ message: 'OK' }).catch((err) => {
-        res.status(500).json({ message: err });
-      });
-    });
+router.delete('/departments/:id', async (req, res) => {
+  try {
+    const dep = await Department.findByIdAndDelete(req.params.id);
+    if (dep) {
+      res.json({ message: 'OK' });
+    } else {
+      res.status(404).json({ message: 'Not Found' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
 module.exports = router;
