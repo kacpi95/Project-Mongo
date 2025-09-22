@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const { ObjectId } = require('mongodb');
 const Product = require('../models/products.model');
 
 router.get('/products', async (req, res) => {
@@ -35,47 +34,42 @@ router.get('/products/:id', async (req, res) => {
   }
 });
 
-router.post('/products', (req, res) => {
+router.post('/products', async (req, res) => {
   const { name, client } = req.body;
 
-  req.db
-    .collection('products')
-    .insertOne({ name: name, client: client })
-    .then(() => {
-      res.json({ message: 'OK' });
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err });
-    });
+  try {
+    const newProduct = new Product({ name: name, client: client });
+    await newProduct.save();
+    res.json({ message: 'OK' });
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
-router.put('/products/:id', (req, res) => {
+router.put('/products/:id', async (req, res) => {
   const { name, client } = req.body;
 
-  req.db
-    .collection('products')
-    .updateOne(
-      { _id: ObjectId(req.params.id) },
-      { $set: { name: name, client: client } }
-    )
-    .then(() => {
-      res.json({ message: 'OK' });
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err });
-    });
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { name: name, client: client },
+      { new: true }
+    );
+    if (!product) res.status(404).json({ message: 'Not Found' });
+    else res.json({ message: 'OK' });
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
-router.delete('/products/:id', (req, res) => {
-  req.db
-    .collection('products')
-    .deleteOne({ _id: ObjectId(req.params.id) })
-    .then(() => {
-      res.json({ message: 'OK' });
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err });
-    });
+router.delete('/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) res.status(404).json({ message: 'Not Found' });
+    else res.json({ message: 'OK' });
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
 module.exports = router;
