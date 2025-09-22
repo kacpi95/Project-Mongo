@@ -3,41 +3,36 @@
 const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
+const Product = require('../models/products.model');
 
-router.get('/products', (req, res) => {
-  req.db
-    .collection('products')
-    .find()
-    .toArray()
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err });
-    });
+router.get('/products', async (req, res) => {
+  try {
+    res.json(await Product.find());
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
-router.get('/products/random', (req, res) => {
-  req.db
-    .collection('products')
-    .aggregate([{ $sample: { size: 1 } }])
-    .toArray()
-    .then((data) => {
-      res.json(data[0]);
-    });
+router.get('/products/random', async (req, res) => {
+  try {
+    const count = await Product.countDocuments();
+    const random = Math.floor(Math.random() * count);
+    const product = await Product.findOne().skip(random);
+    if (!product) res.status(404).json({ message: 'Not Found' });
+    else res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
-router.get('/products/:id', (req, res) => {
-  req.db
-    .collection('products')
-    .find({ _id: ObjectId(req.params.id) })
-    .then((data) => {
-      if (!data) res.status(404).json({ message: 'Not found' });
-      else res.json(data);
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err });
-    });
+router.get('/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) res.status(404).json({ message: 'Not Found' });
+    else res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
 router.post('/products', (req, res) => {
