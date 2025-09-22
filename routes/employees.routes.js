@@ -42,21 +42,24 @@ router.post('/employees', async (req, res) => {
       department: department,
     });
     await newEmployee.save();
-    res.json({ message: 'OK' });
+    const updateEmployee = await Employee.findById(newEmployee._id).populate(
+      'department'
+    );
+    res.json(updateEmployee);
   } catch (err) {
     res.status(500).json({ message: err });
   }
 });
 
 router.put('/employees/:id', async (req, res) => {
-  const { firstName, lastName, department } = req.body;
+  const { firstName, lastName } = req.body;
 
   try {
     const employee = await Employee.findByIdAndUpdate(
       req.params.id,
-      { firstName, lastName, department },
+      { firstName, lastName },
       { new: true }
-    );
+    ).populate('department');
     if (!employee) res.status(404).json({ message: 'Not Found' });
     else res.json({ message: 'OK' });
   } catch (err) {
