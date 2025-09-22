@@ -1,38 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
+const Employee = require('../models/employees.model');
 
-router.get('/employees', (req, res) => {
-  req.db
-    .collection('employees')
-    .find()
-    .toArray()
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((err) => {
-      req.json(500).json({ message: err });
-    });
+router.get('/employees', async (req, res) => {
+  try {
+    res.json(await Employee.find());
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
-router.get('/employees/random', (req, res) => {
-  req.db
-    .collection('employees')
-    .aggregate([{ size: 1 }])
-    .toArray()
-    .then((data) => res.json(data[0]));
+router.get('/employees/random', async (req, res) => {
+  try {
+    const count = await Employee.countDocuments();
+    const rand = Math.floor(Math.random() * count);
+    const dep = await Employee.findOne().skip(rand);
+    if (!dep) res.status(404).json({ message: 'Not Found' });
+    else res.json(dep);
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
-router.get('/employees/:id', (req, res) => {
-  req.db
-    .collection('employees')
-    .findOne({ _id: ObjectId(req.params.id) })
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err });
-    });
+router.get('/employees/:id', async (req, res) => {
+  try {
+    const dep = await Employee.findById(req.params.id);
+    if (!dep) res.status(404).json({ message: 'Not Found' });
+    else res.json(dep);
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
 });
 
 router.post('/employees', (req, res) => {
